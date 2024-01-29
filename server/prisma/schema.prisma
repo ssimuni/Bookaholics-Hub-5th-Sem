@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model User {
+  id Int @id @default(autoincrement())
+  name String 
+  email String @unique
+  address String
+  phone String
+  role String @default("General") //general  publisher admin
+  password String 
+  createdAt DateTime @default(now())
+  sellingbook SellingBook []
+  exchangeablebook ExchangeableBook[]
+  borrowablebook BorrowableBook []
+  orders Order[]
+  exchange ExchangeProcess[]
+  borrow BorrowProcess[]
+}
+
+model SellingBook {
+  sid Int @id @default(autoincrement())
+  b_title String
+  b_authorname String
+  b_edition String
+  b_numOfPages Int
+  b_description String
+  b_price Int
+  b_quantity Int
+  category String
+  image String
+  postAt DateTime @default(now())
+  sold_by User @relation(fields: [soldBy_Email],references: [email])
+  soldBy_Email String
+  order Order[]
+}
+
+model Order {
+  orderId Int @id @default(autoincrement())
+  state String @default("Pending")  //pending confirmed 
+  orderedAt DateTime @default(now())
+  quantity Int 
+  pickupPoint String
+  total Int 
+  phone String
+  takenBy User @relation(fields: [takenBy_Email],references: [email])
+  takenBy_Email String
+  sellbook SellingBook @relation(fields:[sbId],references: [sid])
+  sbId Int 
+}
+
+model ExchangeableBook {
+  ebId Int @id @default(autoincrement())
+  b_title String
+  b_authorname String
+  b_edition String
+  b_numOfPages Int
+  b_description String
+  b_price Int
+  b_quantity Int
+  category String
+  image String
+  postAt DateTime @default(now())
+  sold_by User @relation(fields: [soldBy_Email],references: [email])
+  soldBy_Email String
+  wishedBook String
+  wishedBookAuthor String
+  wishedBookEdition String
+  exchangeProcess ExchangeProcess[]
+}
+
+model ExchangeProcess {
+  epId Int @id @default(autoincrement())
+  postAt DateTime  @default(now())
+  phone String
+  state String @default("Pending")
+  exchangeId ExchangeableBook @relation(fields: [eId], references: [ebId])
+  eId Int 
+  exchanger User @relation(fields: [exchangerEmail],references: [email])
+  exchangerEmail String
+}
+
+model BorrowableBook {
+  borrId Int @id @default(autoincrement())
+  b_title String
+  b_authorname String
+  b_edition String
+  b_numOfPages Int
+  b_description String
+  b_price Int
+  b_quantity Int
+  category String
+  image String
+  postAt DateTime @default(now())
+  sold_by User @relation(fields: [soldBy_Email],references: [email])
+  soldBy_Email String
+  pickupPoint String
+  returnTime String
+  paymentForBorrow Int
+  borrowProcess BorrowProcess[]
+}
+
+model BorrowProcess {
+  bpId Int @id @default(autoincrement())
+  borrowsAt DateTime @default(now())
+  phone String
+  borrState String @default("Pending")
+  borrowId BorrowableBook @relation(fields: [bbId], references: [borrId])
+  bbId Int 
+  borrower User @relation(fields: [borrowerEmail],references: [email])
+  borrowerEmail String
+}
